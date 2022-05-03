@@ -12,10 +12,9 @@ import { Server } from "socket.io";
 dotenv.config();
 
 // Connect to database
-connectDB();
+// connectDB();
 
 //Routes files
-import users from "./server/routes/auth.js";
 import games from "./server/routes/game.js";
 
 const app = express();
@@ -37,10 +36,9 @@ if (process.env.NODE_ENV === "development") {
 app.use(express.json());
 
 //Mount routers
-app.use("/api/v1/auth", users);
 app.use("/api/v1/game", games);
 
-const PORT = process.env.PORT || 7000;
+const PORT = process.env.PORT || 5000;
 
 //* SERVER */
 const server = app.listen(
