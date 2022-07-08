@@ -1,7 +1,7 @@
 import Web3 from "web3";
 import Provider from "@truffle/hdwallet-provider";
-import Pool from "../abis/Pool.json";
-import Contract from "../abis/contract-addresses.json";
+import Pool from "../abis/Pool.js";
+import Contract from "../abis/contract-addresses.js";
 
 export const contractInit = () => {
   const provider = new Provider(
