@@ -5,18 +5,20 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "NODE_ENV=production node src/server.js",
-    "dev": "nodemon src/server.js"
+    "start": "NODE_ENV=production node --experimental-json-modules src/server.js",
+    "dev": "nodemon --experimental-json-modules src/server.js"
   },
   "author": "chuks remy",
   "license": "MIT",
   "dependencies": {
+    "@truffle/hdwallet-provider": "^2.0.9",
     "axios": "^0.26.1",
     "bcryptjs": "^2.4.3",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
     "crypto-js": "^4.1.1",
     "dotenv": "^10.0.0",
+    "ethers": "^5.6.4",
     "express": "^4.17.1",
     "google-auth-library": "^7.10.2",
     "jsonwebtoken": "^8.5.1",
@@ -25,7 +27,8 @@
     "nodemailer": "^6.7.2",
     "nodemailer-express-handlebars": "^4.0.0",
     "socket.io": "^4.3.2",
-    "swagger-ui-express": "^4.1.6"
+    "swagger-ui-express": "^4.1.6",
+    "web3": "^1.7.4"
   },
   "devDependencies": {
     "nodemon": "^2.0.13"

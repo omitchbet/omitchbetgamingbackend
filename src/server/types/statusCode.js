@@ -1,20 +1,11 @@
-const SUCCESS = 200;
+export const SUCCESS = 200;
 
-const FORBIDEN = 403;
+export const FORBIDEN = 403;
 
-const UNAUTHORIZED = 401;
+export const UNAUTHORIZED = 401;
 
-const NOT_FOUND = 404;
+export const NOT_FOUND = 404;
 
-const BAD_REQUEST = 400;
+export const BAD_REQUEST = 400;
 
-const SERVER_ERROR = 500;
-
-export {
-  SUCCESS,
-  FORBIDEN,
-  UNAUTHORIZED,
-  NOT_FOUND,
-  BAD_REQUEST,
-  SERVER_ERROR,
-};
+export const SERVER_ERROR = 500;

@@ -12,7 +12,7 @@ import { Server } from "socket.io";
 dotenv.config();
 
 // Connect to database
-// connectDB();
+connectDB();
 
 //Routes files
 import games from "./server/routes/game.js";
@@ -36,7 +36,7 @@ if (process.env.NODE_ENV === "development") {
 app.use(express.json());
 
 //Mount routers
-app.use("/api/v1/game", games);
+app.use("/game", games);
 
 const PORT = process.env.PORT || 5000;
 
