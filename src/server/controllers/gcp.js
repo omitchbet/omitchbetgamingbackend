@@ -135,6 +135,8 @@ export async function play(req, res, next) {
 
     const { user_id, currency, game, game_id, finished, actions } = req.body;
 
+    console.log({ user_id, currency, game, game_id, finished, actions });
+
     const { myContract, web3, provider, walletAddress } = contractInit();
 
     // let balance = await myContract.methods.bettingBalance(user_id).call();
