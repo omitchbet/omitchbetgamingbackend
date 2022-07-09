@@ -36,7 +36,7 @@ if (process.env.NODE_ENV === "development") {
 app.use(express.json());
 
 //Mount routers
-app.use("/game", games);
+app.use("/", games);
 
 const PORT = process.env.PORT || 5000;
 

@@ -145,68 +145,69 @@ export async function play(req, res, next) {
     // const receipt = await myContract.methods.setData(3).send({ from: address });
     // console.log(`Transaction hash: ${receipt.transactionHash}`);
     // console.log(`New data value: ${await myContract.methods.data().call()}`);
-
-    for (let i = 0; i < actions.length; i++) {
-      const isProcessed = await Action.findOne({
-        action_id: actions[i].action_id,
-      });
-
-      if (isProcessed) {
-        transactions.push({
-          action_id: isProcessed.action_id,
-          tx_id: isProcessed._id,
-          processed_at: isProcessed.createdAt,
+    if (actions.length !== 0) {
+      for (let i = 0; i < actions.length; i++) {
+        const isProcessed = await Action.findOne({
+          action_id: actions[i].action_id,
         });
-      } else {
-        if (actions[i].action === "bet") {
-          console.log(actions[i].amount, balance);
-          if (actions[i].amount > balance) {
-            return res
-              .status(412)
-              .json({ message: "Not enough balance to process bet" });
+
+        if (isProcessed) {
+          transactions.push({
+            action_id: isProcessed.action_id,
+            tx_id: isProcessed._id,
+            processed_at: isProcessed.createdAt,
+          });
+        } else {
+          if (actions[i].action === "bet") {
+            console.log(actions[i].amount, balance);
+            if (actions[i].amount > balance) {
+              return res
+                .status(412)
+                .json({ message: "Not enough balance to process bet" });
+            }
+
+            const amount = web3.utils.toWei(actions[i].amount.toString());
+
+            const receipt = await myContract.methods
+              .bet(amount, user_id)
+              .send({ from: walletAddress.address });
+
+            balance = await getUserBalance(web3, myContract, user_id);
+
+            const action = await Action.create({
+              action_id: actions[i].action_id,
+              amount: actions[i].amount,
+              jackpot_contribution: actions[i].jackpot_contribution,
+            });
+
+            transactions.push({
+              action_id: action.action_id,
+              tx_id: action._id,
+              processed_at: action.createdAt,
+            });
           }
 
-          const amount = web3.utils.toWei(actions[i].amount.toString());
+          if (actions[i].action === "win") {
+            const amount = web3.utils.toWei(actions[i].amount.toString());
 
-          const receipt = await myContract.methods
-            .bet(amount, user_id)
-            .send({ from: walletAddress.address });
+            const receipt = await myContract.methods
+              .updateWinning(amount, user_id)
+              .send({ from: walletAddress.address });
 
-          balance = await getUserBalance(web3, myContract, user_id);
+            balance = await getUserBalance(web3, myContract, user_id);
 
-          const action = await Action.create({
-            action_id: actions[i].action_id,
-            amount: actions[i].amount,
-            jackpot_contribution: actions[i].jackpot_contribution,
-          });
+            const action = await Action.create({
+              action_id: actions[i].action_id,
+              amount: actions[i].amount,
+              jackpot_contribution: actions[i].jackpot_contribution,
+            });
 
-          transactions.push({
-            action_id: action.action_id,
-            tx_id: action._id,
-            processed_at: action.createdAt,
-          });
-        }
-
-        if (actions[i].action === "win") {
-          const amount = web3.utils.toWei(actions[i].amount.toString());
-
-          const receipt = await myContract.methods
-            .updateWinning(amount, user_id)
-            .send({ from: walletAddress.address });
-
-          balance = await getUserBalance(web3, myContract, user_id);
-
-          const action = await Action.create({
-            action_id: actions[i].action_id,
-            amount: actions[i].amount,
-            jackpot_contribution: actions[i].jackpot_contribution,
-          });
-
-          transactions.push({
-            action_id: action.action_id,
-            tx_id: action._id,
-            processed_at: action.createdAt,
-          });
+            transactions.push({
+              action_id: action.action_id,
+              tx_id: action._id,
+              processed_at: action.createdAt,
+            });
+          }
         }
       }
     }
