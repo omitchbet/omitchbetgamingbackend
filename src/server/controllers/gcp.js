@@ -1,5 +1,6 @@
 import {
   BAD_REQUEST,
+  FORBIDEN,
   NOT_FOUND,
   SERVER_ERROR,
   SUCCESS,
@@ -50,7 +51,7 @@ export async function demo(req, res, next) {
       }
     );
 
-    res.status(SUCCESS).json({ response: gameres.data });
+    return res.status(SUCCESS).json({ response: gameres.data });
   } catch (error) {
     return res.status(SERVER_ERROR).json({ message: error.message });
   }
@@ -103,7 +104,7 @@ export async function createSessions(req, res, next) {
       }
     );
 
-    res.status(SUCCESS).json({ response: gameres.data });
+    return res.status(SUCCESS).json({ response: gameres.data });
   } catch (error) {
     return res.status(SERVER_ERROR).json({ message: error.message });
   }
@@ -129,13 +130,21 @@ export async function getBalance(req, res, next) {
 
 export async function play(req, res, next) {
   try {
-    compareSignature(req, next);
+    const token = req.headers["x-request-sign"];
+    if (!token) {
+      return res.status(FORBIDEN).json({ message: "User Unauthorized" });
+    }
+    const signature = generateSignature("a3gb9zJrzVUwZve2BU5PXDpX", req.body);
+
+    if (token !== signature) {
+      return res
+        .status(FORBIDEN)
+        .json({ message: "signature unmatched error " });
+    }
 
     let transactions = [];
 
     const { user_id, currency, game, game_id, finished, actions } = req.body;
-
-    console.log({ user_id, currency, game, game_id, finished, actions });
 
     const { myContract, web3, provider, walletAddress } = contractInit();
 
@@ -214,7 +223,7 @@ export async function play(req, res, next) {
       }
     }
 
-    res.status(200).json({ balance, transactions });
+    return res.status(200).json({ balance, transactions });
   } catch (error) {
     return res.status(SERVER_ERROR).json({ message: error.message });
   }

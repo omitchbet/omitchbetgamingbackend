@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { FORBIDEN } from "../server/types/statusCode.js";
+import { FORBIDEN, SERVER_ERROR } from "../server/types/statusCode.js";
 import crypto from "crypto";
 
 export const generateToken = (user) => {
@@ -22,23 +22,19 @@ export const getUserFromToken = (req) => {
   }
 };
 
-export const compareSignature = (req, next) => {
-  try {
-    const token = req.headers.xRequestSign;
-    if (!token) {
-      throw Error("User Unauthorized");
-    }
-    const signature = generateSignature("a3gb9zJrzVUwZve2BU5PXDpX", req.body);
+export const compareSignature = (req, res, next) => {
+  const token = req.headers["x-request-sign"];
+  if (!token) {
+    throw Error("User Unauthorized");
+  }
+  const signature = generateSignature("a3gb9zJrzVUwZve2BU5PXDpX", req.body);
 
-    if (token !== signature) {
-      return res
-        .status(FORBIDEN)
-        .json({ message: "signature unmatched error " });
-    }
+  console.log(signature);
 
+  if (token !== signature) {
+    return res.status(FORBIDEN).json({ message: "signature unmatched error " });
+  } else {
     next();
-  } catch (e) {
-    throw Error(e);
   }
 };
 
