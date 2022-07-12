@@ -29,8 +29,6 @@ export const compareSignature = (req, res, next) => {
   }
   const signature = generateSignature("a3gb9zJrzVUwZve2BU5PXDpX", req.body);
 
-  console.log(signature);
-
   if (token !== signature) {
     return res.status(FORBIDEN).json({ message: "signature unmatched error " });
   } else {

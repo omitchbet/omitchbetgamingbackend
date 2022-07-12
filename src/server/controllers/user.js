@@ -25,14 +25,12 @@ export async function createUser(req, res, next) {
       balance,
       ...rest,
     });
-    console.log(user);
 
     return res.status(SUCCESS).json({
       message: "Created",
       user,
     });
   } catch (error) {
-    console.log(error);
     return res.status(SERVER_ERROR).json({ message: error.message });
   }
 }

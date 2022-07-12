@@ -153,8 +153,6 @@ export async function play(req, res, next) {
       walletAddress: user_id.toLowerCase(),
     });
 
-    console.log(gamer);
-
     if (!gamer) return res.status(BAD_REQUEST).json({ message: "Not found" });
 
     if (actions.length !== 0) {
@@ -219,7 +217,6 @@ export async function play(req, res, next) {
       .status(200)
       .json({ balance: gamer.balance, game_id, transactions });
   } catch (error) {
-    console.log(error);
     return res.status(SERVER_ERROR).json({ message: error.message });
   }
 }
