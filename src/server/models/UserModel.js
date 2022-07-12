@@ -7,7 +7,44 @@ const UserSchema = mongoose.Schema({
     type: String,
     required: false,
   },
-  sessionId: {
+  balance: {
+    type: Number,
+    required: false,
+  },
+  walletAddress: {
+    type: String,
+    required: false,
+    unique: true,
+  },
+  firstName: {
+    type: String,
+    required: false,
+  },
+  lastname: {
+    type: String,
+    required: false,
+  },
+  avatarurl: {
+    type: String,
+    required: false,
+  },
+  nickname: {
+    type: String,
+    required: false,
+  },
+  city: {
+    type: String,
+    required: false,
+  },
+  country: {
+    type: String,
+    required: false,
+  },
+  dateOfBirth: {
+    type: String,
+    required: false,
+  },
+  gender: {
     type: String,
     required: false,
   },
@@ -30,59 +67,11 @@ const UserSchema = mongoose.Schema({
       message: "Please enter a valid email",
     },
   },
-  password: {
-    type: String,
-    required: true,
-  },
-  walletAddress: {
-    type: String,
-    required: false,
-  },
-  walletBalance: {
-    type: String,
-    required: false,
-  },
-  resetPasswordToken: String,
-  resetPasswordExpire: String,
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
-
-UserSchema.pre(/^(save)/, function () {
-  let self = this;
-  self.referralLink = `?refId=${self._id}`;
-});
-
-UserSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
-};
-
-UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    next();
-  }
-
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-});
-
-UserSchema.methods.getResetPasswordToken = function () {
-  //Generate Token
-  const resetToken = crypto.randomBytes(20).toString("hex");
-
-  // Hash token and set to resetPassword field
-  this.resetPasswordToken = crypto
-    .createHmac("sha256", process.env.JWT_SECRET)
-    .update(resetToken)
-    .digest("hex");
-
-  // set expire
-  this.resetPasswordExpire = Date.now() + 60 * 60 * 10000;
-
-  return resetToken;
-};
 
 const User = mongoose.model("User", UserSchema);
 export default User;

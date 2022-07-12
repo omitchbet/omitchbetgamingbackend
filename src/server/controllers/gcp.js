@@ -12,6 +12,7 @@ import {
 } from "../../utils/jsonWebToken.js";
 import { contractInit } from "../../utils/contractInit.js";
 import Action from "../models/ActionModel.js";
+import User from "../models/UserModel.js";
 import { getUserBalance } from "../../utils/helper.js";
 
 // const expectedSignature =
@@ -59,7 +60,6 @@ export async function demo(req, res, next) {
 
 export async function createSessions(req, res, next) {
   try {
-    console.log("123");
     let {
       casino_id,
       game,
@@ -114,9 +114,10 @@ export async function getBalance(req, res, next) {
   try {
     const { myContract, web3, provider, walletAddress } = contractInit();
 
-    // const balance = await myContract.methods
-    //   .bettingBalance("0x2049B28B9D7e74348cC8800B9a34F6ce9911E622")
-    //   .call();
+    // let balance = await myContract.methods.bettingBalance(user_id).call();
+    // balance = Number(web3.utils.fromWei(balance, "ether"));
+
+    // let balance = await getUserBalance(web3, myContract, user_id);
     // console.log(`Betting balance: ${web3.utils.fromWei(balance, "ether")}`);
     // // const receipt = await myContract.methods.setData(3).send({ from: address });
     // // console.log(`Transaction hash: ${receipt.transactionHash}`);
@@ -136,6 +137,8 @@ export async function play(req, res, next) {
     }
     const signature = generateSignature("a3gb9zJrzVUwZve2BU5PXDpX", req.body);
 
+    console.log(signature);
+
     if (token !== signature) {
       return res
         .status(FORBIDEN)
@@ -146,18 +149,14 @@ export async function play(req, res, next) {
 
     const { user_id, currency, game, game_id, finished, actions } = req.body;
 
-    console.log(req.body);
+    const gamer = await User.findOne({
+      walletAddress: user_id.toLowerCase(),
+    });
 
-    const { myContract, web3, provider, walletAddress } = contractInit();
+    console.log(gamer);
 
-    // let balance = await myContract.methods.bettingBalance(user_id).call();
-    // balance = Number(web3.utils.fromWei(balance, "ether"));
+    if (!gamer) return res.status(BAD_REQUEST).json({ message: "Not found" });
 
-    let balance = await getUserBalance(web3, myContract, user_id);
-
-    // const receipt = await myContract.methods.setData(3).send({ from: address });
-    // console.log(`Transaction hash: ${receipt.transactionHash}`);
-    // console.log(`New data value: ${await myContract.methods.data().call()}`);
     if (actions.length !== 0) {
       for (let i = 0; i < actions.length; i++) {
         const isProcessed = await Action.findOne({
@@ -172,22 +171,17 @@ export async function play(req, res, next) {
           });
         } else {
           if (actions[i].action === "bet") {
-            console.log(actions[i].amount, balance);
-            if (actions[i].amount > balance) {
+            if (actions[i].amount > gamer.balance) {
               return res
                 .status(412)
                 .json({ message: "Not enough balance to process bet" });
             }
 
-            const amount = web3.utils.toWei(actions[i].amount.toString());
-
-            const receipt = await myContract.methods
-              .bet(amount, user_id)
-              .send({ from: walletAddress.address });
-
-            balance = await getUserBalance(web3, myContract, user_id);
+            gamer.balance -= actions[i].amount;
+            await gamer.save();
 
             const action = await Action.create({
+              action: actions[i].action,
               action_id: actions[i].action_id,
               amount: actions[i].amount,
               jackpot_contribution: actions[i].jackpot_contribution,
@@ -201,15 +195,11 @@ export async function play(req, res, next) {
           }
 
           if (actions[i].action === "win") {
-            const amount = web3.utils.toWei(actions[i].amount.toString());
-
-            const receipt = await myContract.methods
-              .updateWinning(amount, user_id)
-              .send({ from: walletAddress.address });
-
-            balance = await getUserBalance(web3, myContract, user_id);
+            gamer.balance += actions[i].amount;
+            await gamer.save();
 
             const action = await Action.create({
+              action: actions[i].action,
               action_id: actions[i].action_id,
               amount: actions[i].amount,
               jackpot_contribution: actions[i].jackpot_contribution,
@@ -225,7 +215,97 @@ export async function play(req, res, next) {
       }
     }
 
-    return res.status(200).json({ balance, transactions });
+    return res
+      .status(200)
+      .json({ balance: gamer.balance, game_id, transactions });
+  } catch (error) {
+    console.log(error);
+    return res.status(SERVER_ERROR).json({ message: error.message });
+  }
+}
+
+//rollback
+export async function rollback(req, res, next) {
+  try {
+    const token = req.headers["x-request-sign"];
+    if (!token) {
+      return res.status(FORBIDEN).json({ message: "User Unauthorized" });
+    }
+    const signature = generateSignature("a3gb9zJrzVUwZve2BU5PXDpX", req.body);
+
+    if (token !== signature) {
+      return res
+        .status(FORBIDEN)
+        .json({ message: "signature unmatched error " });
+    }
+
+    let transactions = [];
+
+    const { user_id, currency, game, game_id, finished, actions } = req.body;
+
+    const gamer = await User.findOne({
+      walletAddress: user_id.toLowerCase(),
+    });
+
+    if (!gamer) return res.status(BAD_REQUEST).json({ message: "Not found" });
+
+    if (actions.length !== 0) {
+      for (let i = 0; i < actions.length; i++) {
+        const isProcessed = await Action.findOne({
+          action_id: actions[i].action_id,
+        });
+
+        if (isProcessed) {
+          transactions.push({
+            action_id: isProcessed.action_id,
+            tx_id: isProcessed._id,
+            processed_at: isProcessed.createdAt,
+          });
+        } else {
+          const originalAction = await Action.findOne({
+            action_id: actions[i].original_action_id,
+          });
+
+          if (originalAction.action === "bet") {
+            gamer.balance += actions[i].amount;
+            await gamer.save();
+
+            const action = await Action.create({
+              action: actions[i].action,
+              action_id: actions[i].action_id,
+              amount: actions[i].amount,
+            });
+
+            transactions.push({
+              action_id: action.action_id,
+              tx_id: "",
+              processed_at: action.createdAt,
+            });
+          }
+
+          if (originalAction.action === "win") {
+            gamer.balance -= actions[i].amount;
+            await gamer.save();
+
+            const action = await Action.create({
+              action: actions[i].action,
+              action_id: actions[i].action_id,
+              amount: actions[i].amount,
+            });
+
+            transactions.push({
+              action_id: action.action_id,
+              tx_id: "",
+              processed_at: action.createdAt,
+            });
+          }
+        }
+      }
+    }
+
+    return res
+      .status(200)
+      .json({ balance: gamer.balance, game_id, transactions });
   } catch (error) {
     return res.status(SERVER_ERROR).json({ message: error.message });
   }
