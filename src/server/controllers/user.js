@@ -4,26 +4,29 @@ import { BAD_REQUEST, SERVER_ERROR, SUCCESS } from "../types/statusCode.js";
 
 export async function createUser(req, res, next) {
   try {
-    let { walletAddress, balance, ...rest } = req.body;
+    let { walletAddress, ...rest } = req.body;
 
     walletAddress = walletAddress.toLowerCase();
 
-    if (!walletAddress || !balance) {
+    if (!walletAddress) {
       return res.status(BAD_REQUEST).json({
         message: "Please provide all field values",
       });
     }
 
-    const walletAddressExist = await User.findOne({ walletAddress });
+    const connectedUser = await User.findOne({ walletAddress });
 
-    if (walletAddressExist) {
-      return res.status(BAD_REQUEST).json({ message: "wallet address exist" });
+    if (connectedUser) {
+      return res.status(SUCCESS).json({
+        message: "Created",
+        user: connectedUser,
+      });
     }
 
     // Create user
     const user = await User.create({
       walletAddress,
-      balance,
+      balance: 0,
       ...rest,
     });
 
@@ -35,6 +38,7 @@ export async function createUser(req, res, next) {
     return res.status(SERVER_ERROR).json({ message: error.message });
   }
 }
+
 export async function getUser(req, res, next) {
   try {
     let { id } = req.params;
