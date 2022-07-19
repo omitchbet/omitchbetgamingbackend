@@ -170,9 +170,7 @@ export async function play(req, res, next) {
         } else {
           if (actions[i].action === "bet") {
             if (actions[i].amount > gamer.balance) {
-              return res
-                .status(412)
-                .json({ message: "Not enough balance to process bet" });
+              return res.status(412);
             }
 
             gamer.balance -= actions[i].amount;
