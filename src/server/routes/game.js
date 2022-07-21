@@ -23,7 +23,7 @@ router.get("/balance", getBalance);
 router.post("/play", play);
 router.post("/rollback", rollback);
 router.post("/createuser", createUser);
-router.post("/updateuser", updateUser);
+router.put("/updateuser", updateUser);
 router.get("/getuser/:id", getUser);
 router.post("/withdraw", withdraw);
 
