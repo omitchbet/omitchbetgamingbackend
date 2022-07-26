@@ -89,23 +89,20 @@ export async function createSessions(req, res, next) {
       userGamingDetails
     );
 
-    const config = {
+    let reqInstance = axios.create({
       headers: {
         "X-REQUEST-SIGN": generatedSignature,
-        "Content-Type": "application/json",
       },
-    };
+    });
 
-    const gameres = await axios.post(
+    const gameres = await reqInstance.post(
       `https://int.bgaming-system.com/a8r/omitch-int/sessions`,
-      userGamingDetails,
-      {
-        config,
-      }
+      userGamingDetails
     );
 
     return res.status(SUCCESS).json({ response: gameres.data });
   } catch (error) {
+    console.log(error);
     return res.status(SERVER_ERROR).json({ message: error.message });
   }
 }
