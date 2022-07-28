@@ -172,13 +172,13 @@ export async function play(req, res, next) {
               return res.status(412);
             }
 
-            gamer.balance -= actions[i].amount;
+            gamer.balance -= subAmount;
             await gamer.save();
 
             const action = await Action.create({
               action: actions[i].action,
               action_id: actions[i].action_id,
-              amount: actions[i].amount,
+              amount: subAmount,
               jackpot_contribution: actions[i].jackpot_contribution,
             });
 
@@ -197,7 +197,7 @@ export async function play(req, res, next) {
             const action = await Action.create({
               action: actions[i].action,
               action_id: actions[i].action_id,
-              amount: actions[i].amount,
+              amount: subAmount,
               jackpot_contribution: actions[i].jackpot_contribution,
             });
 
