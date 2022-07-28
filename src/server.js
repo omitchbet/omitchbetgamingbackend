@@ -16,6 +16,7 @@ connectDB();
 
 //Routes files
 import games from "./server/routes/game.js";
+import evenbetGame from "./server/routes/evenbetGame.js";
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use(express.json());
 
 //Mount routers
 app.use("/", games);
+// app.use("/evenbet", evenbetGame);
 
 const PORT = process.env.PORT || 5000;
 

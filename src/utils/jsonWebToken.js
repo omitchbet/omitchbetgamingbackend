@@ -43,3 +43,7 @@ export function generateSignature(apiSecret, body) {
   }
   return hmac.digest("hex");
 }
+
+export function generateSHA256(apiSecret) {
+  return crypto.createHash("sha256").update(apiSecret).digest("hex");
+}

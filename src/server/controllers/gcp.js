@@ -72,6 +72,8 @@ export async function createSessions(req, res, next) {
       user,
     } = req.body;
 
+    balance = Number(balance.toString() + "00");
+
     const userGamingDetails = {
       casino_id,
       game,
@@ -208,9 +210,9 @@ export async function play(req, res, next) {
       }
     }
 
-    return res
-      .status(200)
-      .json({ balance: gamer.balance, game_id, transactions });
+    let balance = Number(gamer.balance.toString() + "00");
+
+    return res.status(200).json({ balance, game_id, transactions });
   } catch (error) {
     return res.status(SERVER_ERROR).json({ message: error.message });
   }
