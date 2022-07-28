@@ -262,13 +262,13 @@ export async function rollback(req, res, next) {
           });
 
           if (originalAction.action === "bet") {
-            gamer.balance += actions[i].amount;
+            gamer.balance += originalAction.amount;
             await gamer.save();
 
             const action = await Action.create({
               action: actions[i].action,
               action_id: actions[i].action_id,
-              amount: actions[i].amount,
+              amount: originalAction.amount,
             });
 
             transactions.push({
@@ -279,13 +279,13 @@ export async function rollback(req, res, next) {
           }
 
           if (originalAction.action === "win") {
-            gamer.balance -= actions[i].amount;
+            gamer.balance -= originalAction.amount;
             await gamer.save();
 
             const action = await Action.create({
               action: actions[i].action,
               action_id: actions[i].action_id,
-              amount: actions[i].amount,
+              amount: originalAction.amount,
             });
 
             transactions.push({
@@ -298,9 +298,9 @@ export async function rollback(req, res, next) {
       }
     }
 
-    return res
-      .status(200)
-      .json({ balance: gamer.balance, game_id, transactions });
+    let balance = Number(gamer.balance) * Math.pow(10, 2);
+
+    return res.status(200).json({ balance, game_id, transactions });
   } catch (error) {
     return res.status(SERVER_ERROR).json({ message: error.message });
   }

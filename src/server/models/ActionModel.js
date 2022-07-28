@@ -6,7 +6,7 @@ var ActionSchema = mongoose.Schema({
     required: false,
   },
   amount: {
-    type: String,
+    type: Number,
     required: false,
   },
   action_id: {
