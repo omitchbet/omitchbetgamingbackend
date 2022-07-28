@@ -72,7 +72,7 @@ export async function createSessions(req, res, next) {
       user,
     } = req.body;
 
-    balance = Number(balance.toString() + "00");
+    balance = Number(balance) * Math.pow(10, 2);
 
     const userGamingDetails = {
       casino_id,
@@ -136,8 +136,6 @@ export async function play(req, res, next) {
     }
     const signature = generateSignature("a3gb9zJrzVUwZve2BU5PXDpX", req.body);
 
-    console.log(signature);
-
     if (token !== signature) {
       return res
         .status(FORBIDEN)
@@ -168,7 +166,9 @@ export async function play(req, res, next) {
           });
         } else {
           if (actions[i].action === "bet") {
-            if (actions[i].amount > gamer.balance) {
+            let subAmount = actions[i].amount / Math.pow(10, 2);
+
+            if (subAmount > gamer.balance) {
               return res.status(412);
             }
 
@@ -190,7 +190,8 @@ export async function play(req, res, next) {
           }
 
           if (actions[i].action === "win") {
-            gamer.balance += actions[i].amount;
+            let subAmount = actions[i].amount / Math.pow(10, 2);
+            gamer.balance += subAmount;
             await gamer.save();
 
             const action = await Action.create({
@@ -210,7 +211,7 @@ export async function play(req, res, next) {
       }
     }
 
-    let balance = Number(gamer.balance.toString() + "00");
+    let balance = Number(gamer.balance) * Math.pow(10, 2);
 
     return res.status(200).json({ balance, game_id, transactions });
   } catch (error) {
