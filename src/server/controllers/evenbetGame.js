@@ -36,6 +36,36 @@ export async function getGameList(req, res, next) {
   }
 }
 
+export async function openLobby(req, res, next) {
+  const params = {
+    clientId: "bet-qXrTaMQY",
+    authType: "external",
+    userId: "0xE151dE25279b1826eA0d120faC7e665540829Bd3",
+  };
+
+  const signature = generateEvenbetSig(params);
+
+  let reqInstance = axios.create({
+    headers: {
+      sign: signature,
+    },
+  });
+
+  try {
+    const gameres = await reqInstance.post(
+      `https://omitch.pokerserversoftware.com/api/web/v2/app/users/:userId/session?clientId=bet-qXrTaMQY`,
+      params
+    );
+
+    console.log(gameres);
+
+    res.status(200).json({ data: gameres.data });
+  } catch (error) {
+    console.log(error.response.data);
+    return res.status(SERVER_ERROR).json({ message: error.message });
+  }
+}
+
 export async function createSessionEvenbet(req, res, next) {
   let {
     casino_id,
