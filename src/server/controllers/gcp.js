@@ -102,6 +102,15 @@ export async function createSessions(req, res, next) {
       userGamingDetails
     );
 
+    const connectedUser = await User.findOne({
+      walletAddress: user.id.toLowerCase(),
+    });
+
+    if (connectedUser.isFirstTime) {
+      connectedUser.isFirstTime = false;
+      await connectedUser.save();
+    }
+
     return res.status(SUCCESS).json({ response: gameres.data });
   } catch (error) {
     console.log(error);

@@ -67,10 +67,45 @@ const UserSchema = mongoose.Schema({
       message: "Please enter a valid email",
     },
   },
+  telegram: {
+    type: String,
+    require: false,
+  },
+  twitter: {
+    type: String,
+    require: false,
+  },
+  isFirstTime: {
+    type: Boolean,
+    default: true,
+  },
+  referralCount: {
+    type: Number,
+    default: 0,
+    required: false,
+  },
+  referralUser: {
+    type: String,
+    require: false,
+  },
+  referralLink: {
+    type: String,
+    required: false,
+  },
+  referralBonus: {
+    type: Number,
+    default: 0,
+    required: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
+});
+
+UserSchema.pre(/^(save)/, function () {
+  let self = this;
+  self.referralLink = `?refId=${self.walletAddress}`;
 });
 
 const User = mongoose.model("User", UserSchema);

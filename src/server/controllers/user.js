@@ -1,4 +1,5 @@
 import { contractInit } from "../../utils/contractInit.js";
+import Claim from "../models/ClaimModel.js";
 import User from "../models/UserModel.js";
 import { BAD_REQUEST, SERVER_ERROR, SUCCESS } from "../types/statusCode.js";
 
@@ -138,7 +139,104 @@ export async function withdraw(req, res, next) {
       user,
     });
   } catch (error) {
+    return res.status(SERVER_ERROR).json({ message: error.message });
+  }
+}
+
+export async function createRefUser(req, res, next) {
+  try {
+    const query = req.query;
+    const { refId } = query;
+
+    let { walletAddress, telegram, ...rest } = req.body;
+
+    if (!walletAddress || !telegram) {
+      return res.status(BAD_REQUEST).json({
+        message: "Please provide all field values",
+      });
+    }
+
+    walletAddress = walletAddress.toLowerCase();
+
+    const gamer = await User.findOne({
+      walletAddress,
+    });
+
+    if (gamer) {
+      return res.status(SUCCESS).json({
+        message: "Created",
+        user: gamer,
+      });
+    }
+
+    const refUser = await User.findOne({
+      walletAddress: refId.toLowerCase(),
+    });
+
+    // Create user
+    const user = await User.create({
+      walletAddress,
+      telegram,
+      referralUser: refUser ? refUser._id : "",
+      balance: 0,
+      ...rest,
+    });
+
+    if (refUser) {
+      refUser.referralCount += 1;
+      refUser.referralBonus += 0.2;
+      await refUser.save();
+    }
+
+    return res.status(SUCCESS).json({
+      message: "Created",
+      user,
+    });
+  } catch (error) {
     console.log(error);
     return res.status(SERVER_ERROR).json({ message: error.message });
   }
 }
+
+// export async function claimIncentive(req, res, next) {
+//   try {
+//     let { walletAddress, amount, telegram, ...rest } = req.body;
+
+//     if (!walletAddress || !telegram) {
+//       return res.status(BAD_REQUEST).json({
+//         message: "Please provide all field values",
+//       });
+//     }
+
+//     walletAddress = walletAddress.toLowerCase();
+
+//     const gamer = await User.findOne({
+//       walletAddress,
+//     });
+
+//     if (gamer.referralBonus > 0) {
+//       gamer.referralBonus = 0;
+//       await gamer.save();
+
+//       // Create claim
+//       const claim = await Claim.create({
+//         walletAddress,
+//         amount,
+//         telegram,
+//         ...rest,
+//       });
+
+//       return res.status(SUCCESS).json({
+//         message:
+//           "Claim Receive, BUSD with be deposited to wallet after confirmation",
+//         claim,
+//       });
+//     }
+
+//     return res.status(BAD_REQUEST).json({
+//       message: "Cannot claim 0 BUSD",
+//     });
+//   } catch (error) {
+//     return res.status(SERVER_ERROR).json({ message: error.message });
+//   }
+// }

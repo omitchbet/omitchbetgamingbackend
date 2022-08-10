@@ -10,6 +10,7 @@ import {
   rollback,
 } from "../controllers/gcp.js";
 import {
+  createRefUser,
   createUser,
   getUser,
   updateUser,
@@ -23,6 +24,7 @@ router.get("/balance", getBalance);
 router.post("/play", play);
 router.post("/rollback", rollback);
 router.post("/createuser", createUser);
+router.post("/creatrefeuser", createRefUser);
 router.put("/updateuser", updateUser);
 router.get("/getuser/:id", getUser);
 router.post("/withdraw", withdraw);
