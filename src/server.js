@@ -38,7 +38,7 @@ app.use(express.json());
 
 //Mount routers
 app.use("/", games);
-// app.use("/evenbet", evenbetGame);
+app.use("/evenbet", evenbetGame);
 
 const PORT = process.env.PORT || 5000;
 

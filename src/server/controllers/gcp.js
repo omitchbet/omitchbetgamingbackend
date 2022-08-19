@@ -72,7 +72,7 @@ export async function createSessions(req, res, next) {
       user,
     } = req.body;
 
-    balance = Number(balance) * Math.pow(10, 2);
+    balance = Number(balance) * 100;
 
     const userGamingDetails = {
       casino_id,
@@ -175,7 +175,7 @@ export async function play(req, res, next) {
           });
         } else {
           if (actions[i].action === "bet") {
-            let subAmount = actions[i].amount / Math.pow(10, 2);
+            let subAmount = actions[i].amount / 100;
 
             if (subAmount > gamer.balance) {
               return res.status(412);
@@ -199,7 +199,7 @@ export async function play(req, res, next) {
           }
 
           if (actions[i].action === "win") {
-            let subAmount = actions[i].amount / Math.pow(10, 2);
+            let subAmount = actions[i].amount / 100;
             gamer.balance += subAmount;
             await gamer.save();
 
@@ -220,7 +220,7 @@ export async function play(req, res, next) {
       }
     }
 
-    let balance = Number(gamer.balance) * Math.pow(10, 2);
+    let balance = Number(gamer.balance) * 100;
 
     return res.status(200).json({ balance, game_id, transactions });
   } catch (error) {
@@ -307,7 +307,7 @@ export async function rollback(req, res, next) {
       }
     }
 
-    let balance = Number(gamer.balance) * Math.pow(10, 2);
+    let balance = Number(gamer.balance) * 100;
 
     return res.status(200).json({ balance, game_id, transactions });
   } catch (error) {

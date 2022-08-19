@@ -2,13 +2,13 @@ import express from "express";
 const router = express.Router();
 
 import {
-  createSessionEvenbet,
   getGameList,
   openLobby,
+  seamlessWallet,
 } from "../controllers/evenbetGame.js";
 
-router.post("/session", createSessionEvenbet);
+router.post("/", seamlessWallet);
 router.get("/games", getGameList);
-router.get("/openlobby", openLobby);
+router.post("/openlobby", openLobby);
 
 export default router;

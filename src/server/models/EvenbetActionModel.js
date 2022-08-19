@@ -1,15 +1,27 @@
 import mongoose from "mongoose";
 
 var EvenbetActionSchema = mongoose.Schema({
-  action: {
+  method: {
+    type: String,
+    required: false,
+  },
+  walletAddress: {
     type: String,
     required: false,
   },
   amount: {
+    type: Number,
+    required: false,
+  },
+  balance: {
+    type: Number,
+    required: false,
+  },
+  transactionId: {
     type: String,
     required: false,
   },
-  action_id: {
+  referenceTransactionId: {
     type: String,
     required: false,
   },
